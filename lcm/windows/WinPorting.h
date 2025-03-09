@@ -5,6 +5,12 @@
 #define F_GETFL 3
 #define F_SETFL 4
 
+#define strdup _strdup
+#define mode_t int
+#define PATH_MAX MAX_PATH
+#define fseeko _fseeki64
+#define ftello _ftelli64
+
 #include <Winsock2.h>
 #include <direct.h>
 

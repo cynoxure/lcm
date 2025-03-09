@@ -12,6 +12,7 @@
 #include "lcm_internal.h"
 
 #ifdef WIN32
+#include "windows/WinPorting.h"
 #include <winsock2.h>
 #else
 #include <sys/select.h>

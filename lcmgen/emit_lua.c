@@ -10,7 +10,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+
+#ifdef WIN32
+    #include <lcm/windows/WinPorting.h>
+#else  // These should be coming from stdint.h - but not working?
+    #include <unistd.h>
+#endif
 
 #include "lcmgen.h"
 

@@ -32,6 +32,16 @@ include(lcm-cmake/functions.cmake)
 include(lcm-cmake/version.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+if (WIN32)
+  add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
+  include_directories(${lcm_SOURCE_DIR}/WinSpecific/include)
+  include_directories(${lcm_SOURCE_DIR}/WinSpecific/getopt)
+  include_directories(${lcm_SOURCE_DIR})
+  add_subdirectory(WinSpecific)
+  set(lcm-winport lcm-winport)
+  # get_filename_component(LCM_LCMGEN_PATH ${GLIB2_GLIB_RUNTIME} DIRECTORY)
+  # set(LCM_USE_GLIB_RUNTIME "set(LCM_LCMGEN_PATH \"${LCM_LCMGEN_PATH}\")")
+endif()
 
 # Set CMAKE_MACOSX_RPATH on macOS to satisfy policy CMP0042.
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

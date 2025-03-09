@@ -10,6 +10,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <inttypes.h>
+
 // Several thread and synchronization API functions (e.g. g_mutex_init,
 // g_cond_init, g_thread_new, etc) require 2.32
 #if GLIB_CHECK_VERSION(2, 32, 0)
@@ -18,16 +20,12 @@
 #endif
 
 #ifdef WIN32
-#define __STDC_FORMAT_MACROS  // Enable integer types
+    #define __STDC_FORMAT_MACROS  // Enable integer types
+    #include <lcm/windows/WinPorting.h>
 #else
-#include <unistd.h> /* fdatasync */
+    #include <sys/statvfs.h>
+    #include <unistd.h> /* fdatasync */
 #endif
-
-#ifndef WIN32
-#include <sys/statvfs.h>
-#endif
-
-#include <inttypes.h>
 
 #include "glib_util.h"
 

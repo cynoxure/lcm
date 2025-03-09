@@ -6,10 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+
 #ifdef WIN32
-#define F_OK 0                /* Test for existence.  */
-#define __STDC_FORMAT_MACROS  // Enable integer types
+    #include <lcm/windows/WinPorting.h>
+#else  // These should be coming from stdint.h - but not working?
+    #include <unistd.h>
+#endif
+
+#ifdef WIN32
+    #define F_OK 0                /* Test for existence.  */
+    #define __STDC_FORMAT_MACROS  // Enable integer types
 #endif
 
 #include <lcm/lcm_version.h>
