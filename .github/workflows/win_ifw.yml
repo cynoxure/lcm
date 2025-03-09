@@ -166,16 +166,16 @@ jobs:
         retention-days: 10
 
   ########################## CLEAN BUILD FOLDERES ###############################
-  post_cleaner_windows:
-    runs-on: self-hosted
-    needs: upload_windows
+  # post_cleaner_windows:
+  #   runs-on: self-hosted
+  #   needs: upload_windows
 
-    steps:
-    - name: Clean ${{ runner.workspace }}
-      continue-on-error: true
-      run: |
-        echo "Cleaning up run"
-        Remove-Item -Path "${{ github.workspace }}/release" -Recurse -Force
-        Remove-Item -Path "${{ github.workspace }}/debug" -Recurse -Force
-        Remove-Item -Path "${{ github.workspace }}/relwithdebinfo" -Recurse -Force
-        Remove-Item -Path "${{ github.workspace }}/minsizerel" -Recurse -Force
+  #   steps:
+  #   - name: Clean ${{ runner.workspace }}
+  #     continue-on-error: true
+  #     run: |
+  #       echo "Cleaning up run"
+  #       Remove-Item -Path "${{ github.workspace }}/release" -Recurse -Force
+  #       Remove-Item -Path "${{ github.workspace }}/debug" -Recurse -Force
+  #       Remove-Item -Path "${{ github.workspace }}/relwithdebinfo" -Recurse -Force
+  #       Remove-Item -Path "${{ github.workspace }}/minsizerel" -Recurse -Force

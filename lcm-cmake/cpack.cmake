@@ -31,6 +31,7 @@ if(UNIX)
     # Set OS type and ARCH suffix
     set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}-${MACHINE_ARCH})
   endif()
+  set(CPACK_PACKAGE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
 elseif(WIN32)
     set(OS_TYPE win)
 
@@ -49,7 +50,6 @@ elseif(WIN32)
 endif()
 
 # General CPack config
-set(CPACK_PACKAGE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION ${${PROJECT_NAME}_VERSION})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LCM is a set of libraries and tools for message passing and data marshalling")
