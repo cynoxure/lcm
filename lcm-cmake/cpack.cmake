@@ -43,6 +43,9 @@ elseif(WIN32)
 
     # Set OS type and ARCH suffix
     set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}${MACHINE_ARCH})
+
+    include(InstallRequiredSystemLibraries)
+    set(CPACK_GENERATOR "IFW")
 endif()
 
 # General CPack config
@@ -56,14 +59,25 @@ set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${PACKAGE_RELEASE_VERSION}_${OS_TYPE_ARCH_SUFFIX})
 set(CPACK_STRIP_FILES ON)
 
-# DEB specific CPack config
-set(CPACK_DEBIAN_PACKAGE_RELEASE ${PACKAGE_RELEASE_VERSION})
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/lcm-proj/lcm")
-set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libglib2.0-0, libpcre3")
+if( WIN32)
+  include(InstallRequiredSystemLibraries)
+  set(CPACK_GENERATOR "IFW")
+  set(CPACK_IFW_TARGET_DIRECTORY "@HomeDir@/${CPACK_PACKAGE_NAME}" )
+  set(CPACK_IFW_PACKAGE_RELEASE ${PACKAGE_RELEASE_VERSION})
+  set(CPACK_IFW_PACKAGE_DEPENDS "glib2.0-0, pcre2-posix") # not sure this does anything (or needed)
+else(WIN32)
+  # DEB specific CPack config
+  set(CPACK_DEBIAN_PACKAGE_RELEASE ${PACKAGE_RELEASE_VERSION})
+  set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/lcm-proj/lcm")
+  set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libglib2.0-0, libpcre3")
+endif(WIN32)
 
 message(STATUS "CPack: Packages will be placed under ${CPACK_PACKAGE_DIRECTORY}")
 
 include(CPack)
+if( WIN32)
+  include(CPackIFW)
+endif(WIN32)

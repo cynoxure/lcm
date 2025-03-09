@@ -39,6 +39,7 @@ if (WIN32)
   include_directories(${lcm_SOURCE_DIR})
   add_subdirectory(WinSpecific)
   set(lcm-winport lcm-winport)
+  option(BUILD_PACKAGE "Build Installer" OFF)
   # get_filename_component(LCM_LCMGEN_PATH ${GLIB2_GLIB_RUNTIME} DIRECTORY)
   # set(LCM_USE_GLIB_RUNTIME "set(LCM_LCMGEN_PATH \"${LCM_LCMGEN_PATH}\")")
 endif()
@@ -130,4 +131,6 @@ add_custom_target(dist
     -P ${lcm_SOURCE_DIR}/lcm-cmake/mkdist.cmake)
 
 # CPack packaging rules
-include(lcm-cmake/cpack.cmake)
+if(BUILD_PACKAGE)
+  include(lcm-cmake/cpack.cmake)
+endif()

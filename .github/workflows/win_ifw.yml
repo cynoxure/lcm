@@ -1,0 +1,181 @@
+name: CMake
+
+on:
+  push:
+    branches:
+    #test
+      - feature/ifw
+
+env:
+  COMMON_BUILD_ARGS: -A x64 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_SHARED_LIBS=ON 
+  COMMON_BUILD_PKG: -DBUILD_PACKAGE=ON -DCPACK_PACKAGE_DIRECTORY:PATH=${{ github.workspace }}/PACKAGE_RESULTS  -DCPACK_BINARY_IFW=ON -DCPACK_BINARY_NSIS=OFF -DCPACK_IFW_VERBOSE=ON -DCPACK_SOURCE_7Z=OFF -DCPACK_SOURCE_ZIP=OFF -DCPACK_IFW_ROOT:PATH=C:/DEV/Qt/Tools/QtInstallerFramework/4.8
+  COMMON_BUILD_VCPKG: -DVCPKG_MANIFEST_MODE=OFF -DCMAKE_TOOLCHAIN_FILE=C:/DEV/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_INSTALLED_DIR=C:/DEV/vcpkg/vcpkg_installed -DVCPKG_TARGET_TRIPLET=x64-windows
+
+jobs:
+
+  cleaner_windows:
+    runs-on: [self-hosted,Windows]
+    continue-on-error: true
+    steps:
+    - name: Clean ${{ runner.workspace }}
+      continue-on-error: true
+      run: |
+        echo "Cleaning up previous run"
+        Remove-Item -Path "${{ github.workspace }}/release" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/debug" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/relwithdebinfo" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/minsizerel" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/PACKAGE_RESULT" -Recurse -Force
+          
+  checkout_windows:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: [self-hosted,Windows]
+    continue-on-error: true
+    needs: cleaner_windows
+
+    steps:
+    #- uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+          submodules: recursive
+
+  ########################## RELEASE ###############################
+  build_release_windows:
+    runs-on: [self-hosted,Windows,X64]
+    needs: checkout_windows
+    # if: ${{ always() }}
+    # timeout-minutes: 90
+
+    steps:
+    - name: Create Build Environment (Release)
+      working-directory: ${{ github.workspace }}
+      run: |
+        echo github.workspace ${{ github.workspace }}
+        cmake -E make_directory ${{ github.workspace }}/release
+
+    - name: Configure CMake (Release)
+      working-directory: ${{ github.workspace }}/release
+      run: |
+        cmake ${{ env.COMMON_BUILD_ARGS }} ${{ env.COMMON_BUILD_VCPKG }} ${{ env.COMMON_BUILD_PKG }} -DCMAKE_CONFIGURATION_TYPES="Release"  .. 
+
+    - name: Build Solution (Release)
+      working-directory: ${{ github.workspace }}/release
+      run: |
+        cmake --build . --config Release 
+
+    # - name: Test Solution (Release)
+    #   working-directory: ${{ github.workspace }}/release
+    #   run: |
+    #     ctest -C Release -T test --output-on-failure
+
+#        cmake --build . -t RUN_TESTS 
+
+  ########################## DEBUG ###############################
+  build_debug_windows:
+    runs-on: [self-hosted,Windows,X64]
+    needs: build_release_windows
+    # timeout-minutes: 90
+
+    steps:
+    - name: Create Build Environment (Debug)
+      working-directory: ${{ github.workspace }}
+      run: |
+        cmake -E make_directory ${{ github.workspace }}/debug
+
+    - name: Configure CMake (Debug)
+      working-directory: ${{ github.workspace }}/debug
+      run: |
+        cmake ${{ env.COMMON_BUILD_ARGS }} ${{ env.COMMON_BUILD_VCPKG }} ${{ env.COMMON_BUILD_PKG }} -DCMAKE_CONFIGURATION_TYPES="Debug"  .. 
+            
+    - name: Build Solution (Debug)
+      working-directory: ${{ github.workspace }}/debug
+      run: |
+        cmake --build . --config Debug 
+
+  ########################## RELWITHDEBUGINFO ###############################
+  build_relwithdebinfo_windows:
+    runs-on: [self-hosted,Windows,X64]
+    needs: build_release_windows
+    # timeout-minutes: 90
+
+    steps:
+    - name: Create Build Environment (RelWithDebInfo)
+      working-directory: ${{ github.workspace }}
+      run: |
+        cmake -E make_directory ${{ github.workspace }}/relwithdebinfo
+
+    - name: Configure CMake (RelWithDebInfo)
+      working-directory: ${{ github.workspace }}/relwithdebinfo
+      run: |
+        cmake ${{ env.COMMON_BUILD_ARGS }} ${{ env.COMMON_BUILD_VCPKG }} ${{ env.COMMON_BUILD_PKG }} -DCMAKE_CONFIGURATION_TYPES="RelWithDebInfo"  .. 
+            
+    - name: Build Solution (RelWithDebInfo)
+      working-directory: ${{ github.workspace }}/relwithdebinfo
+      run: |
+        cmake --build . --config RelWithDebInfo 
+
+  ########################## MINSIZEREL ###############################
+  build_minsizerel_windows:
+    runs-on: [self-hosted,Windows,X64]
+    needs: build_release_windows
+    # timeout-minutes: 90
+
+    steps:
+    - name: Create Build Environment (MinSizeRel)
+      working-directory: ${{ github.workspace }}
+      run: |
+        cmake -E make_directory ${{ github.workspace }}/minsizerel
+
+    - name: Configure CMake (MinSizeRel)
+      working-directory: ${{ github.workspace }}/minsizerel
+      run: |
+        cmake ${{ env.COMMON_BUILD_ARGS }} ${{ env.COMMON_BUILD_VCPKG }} ${{ env.COMMON_BUILD_PKG }} -DCMAKE_CONFIGURATION_TYPES="MinSizeRel"  .. 
+            
+    - name: Build Solution (MinSizeRel)
+      working-directory: ${{ github.workspace }}/minsizerel
+      run: |
+        cmake --build . --config MinSizeRel 
+
+  ########################## PACKAGE ###############################
+  package_windows:
+    runs-on: [self-hosted,Windows,X64]
+    needs: [build_release_windows,build_debug_windows,build_relwithdebinfo_windows,build_minsizerel_windows]
+    # timeout-minutes: 30
+
+    steps:
+    - name: Package Solution (windows)
+      working-directory: ${{github.workspace}}
+      run: |
+        cpack --verbose --config MultiCPackConfig.cmake
+
+  ########################## UPLOAD ARTIFACT ###############################
+  upload_windows:
+    runs-on: self-hosted
+    needs: package_windows
+
+    steps:
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: NavLib-Installer
+        path: ${{ github.workspace }}/PACKAGE_RESULTS/*.exe
+        retention-days: 10
+
+  ########################## CLEAN BUILD FOLDERES ###############################
+  post_cleaner_windows:
+    runs-on: self-hosted
+    needs: upload_windows
+
+    steps:
+    - name: Clean ${{ runner.workspace }}
+      continue-on-error: true
+      run: |
+        echo "Cleaning up run"
+        Remove-Item -Path "${{ github.workspace }}/release" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/debug" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/relwithdebinfo" -Recurse -Force
+        Remove-Item -Path "${{ github.workspace }}/minsizerel" -Recurse -Force
