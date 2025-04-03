@@ -52,3 +52,8 @@ you are interested in maintaining them please let us know.
 
  * Go
  * C#/.NET
+
+# Windows 'Adjustment'
+Several files updated to allow WIN32 build, install.
+- Built against VCPKG to support Windows apps
+- Disable Go, Lua, Python, Tests (for now)
